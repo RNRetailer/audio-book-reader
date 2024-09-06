@@ -1,0 +1,8 @@
+certifi==2024.8.30
+charset-normalizer==3.3.2
+click==8.1.7
+gTTS==2.5.3
+idna==3.8
+requests==2.32.3
+striprtf==0.0.26
+urllib3==2.2.2
