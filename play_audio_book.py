@@ -79,6 +79,9 @@ def save_progress(audio_book_filename, line_index_human_readable):
         f.flush()
 
 def load_progress(audio_book_filename):
+    if len(sys.argv) == 3:
+        return int(sys.argv[2])
+
     try:
         with open(progress_filename) as f:
             progress_file_obj = json.load(f)
