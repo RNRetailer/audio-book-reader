@@ -97,10 +97,13 @@ if __name__ == '__main__':
     elif book_location.endswith('.epub'):
         book = open_book(book_location)
 
-        lines = [
-            BeautifulSoup(line, features="html.parser").get_text()
-            for line in convert_epub_to_lines(book)
-        ]
+        for line in convert_epub_to_lines(book):
+            lines.extend([
+                sentence.strip()
+                for sentence in BeautifulSoup(line, features="html.parser").get_text().split('.') 
+                if sentence.strip()
+            ])
+
     else:
         with open(book_location) as f:
             possible_lines = f.read().split('.')
@@ -113,11 +116,18 @@ if __name__ == '__main__':
 
     lines = lines[starting_line_index_human_readable - 1:]
 
+    opening_line = f'Reading {sys.argv[1]} starting at line {starting_line_index_human_readable}.'
+
+    print(f'\n{opening_line}\n')
+    print('Press Control + z to skip a line.')
+    print('Press Control + c to exit.\n')
+    print(f'{"-" * len(opening_line)}\n')
+
     if aggressive_saving:
         for line_index, line in enumerate(lines):
             line_index_human_readable = line_index + starting_line_index_human_readable
 
-            print(f'{line_index_human_readable}: {line}')
+            print(f'--\n{line_index_human_readable}: {line}\n')
 
             try:
                 call_read_sentence(line)
@@ -129,7 +139,7 @@ if __name__ == '__main__':
         for line_index, line in enumerate(lines):
             line_index_human_readable = line_index + starting_line_index_human_readable
 
-            print(f'{line_index_human_readable}: {line}')
+            print(f'--\n{line_index_human_readable}: {line}\n')
 
             try:
                 call_read_sentence(line)
