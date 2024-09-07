@@ -31,8 +31,14 @@ def graceful_exit(sig, frame):
     if current_process().name != 'MainProcess':
         return
 
-    save_progress(book_location, line_index_human_readable)
     print(f'Exiting gracefully...')
+
+    save_progress(book_location, line_index_human_readable)
+
+    process.terminate()
+
+    os.system('stty sane')
+
     exit()
 
 def skip_line(sig, frame):
@@ -146,5 +152,4 @@ if __name__ == '__main__':
             except Exception as e:
                 print(e)
 
-    save_progress(book_location, line_index_human_readable)
-    exit()
+    graceful_exit(None, None)
