@@ -56,12 +56,12 @@ def read_sentence_impl(text, language):
 
 def call_read_sentence(text):
     global process
-    
+
     process = Process(target=read_sentence_impl, args=(text, language))
     process.start()
 
     while process.is_alive():
-        pass
+        time.sleep(.5)
 
     time.sleep(seconds_between_lines)
 
