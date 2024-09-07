@@ -146,6 +146,7 @@ if __name__ == '__main__':
 
                 if line:
                    lines.append(line)
+                    
     elif book_location.endswith('.epub'):
         book = open_book(book_location)
 
