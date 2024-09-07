@@ -1,6 +1,6 @@
 from striprtf.striprtf import rtf_to_text
 from epub_conversion.utils import open_book, convert_epub_to_lines
-from multiprocessing import Process
+from multiprocessing import Process, current_process
 from bs4 import BeautifulSoup
 from gtts import gTTS
 import time
@@ -28,9 +28,12 @@ line_index_human_readable = 1
 book_location = os.path.abspath(sys.argv[1])
 
 def graceful_exit(sig, frame):
-    print('Exiting gracefully...')
+    if current_process().name != 'MainProcess':
+        return
+
     save_progress(book_location, line_index_human_readable)
-    sys.exit(0)
+    print(f'Exiting gracefully...')
+    exit()
 
 def skip_line(sig, frame):
     process.terminate()
@@ -61,7 +64,7 @@ def save_progress(audio_book_filename, line_index_human_readable):
             progress_file_obj = json.load(f)
     except:
         progress_file_obj = {}
-    
+
     progress_file_obj[audio_book_filename] = line_index_human_readable
 
     with open(progress_filename, 'w') as f:
@@ -132,3 +135,6 @@ if __name__ == '__main__':
                 call_read_sentence(line)
             except Exception as e:
                 print(e)
+
+    save_progress(book_location, line_index_human_readable)
+    exit()
