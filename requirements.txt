@@ -11,5 +11,6 @@ idna==3.8
 requests==2.32.3
 soupsieve==2.6
 striprtf==0.0.26
+termcolor==2.4.0
 urllib3==2.2.2
 xml-cleaner==2.0.4

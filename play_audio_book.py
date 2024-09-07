@@ -2,6 +2,7 @@ from striprtf.striprtf import rtf_to_text
 from epub_conversion.utils import open_book, convert_epub_to_lines
 from multiprocessing import Process, current_process
 from bs4 import BeautifulSoup
+from termcolor import cprint
 from gtts import gTTS
 import time
 import os
@@ -21,6 +22,18 @@ seconds_between_lines = 0.5
 
 # CODE ------------------------------------------------------------
 
+# pretty print
+def pprint(text) -> None:
+    cprint(text, "light_grey", "on_black", attrs=["bold"])
+
+print = pprint
+
+def darken_previous_line(printable_lines) -> None:
+    sys.stdout.write("\033[F" * len(printable_lines)) # Cursor up one line
+
+    for printable_line in printable_lines:
+        cprint(printable_line, "dark_grey", "on_black", attrs=["bold"])
+    
 temp_mp3_filename = tempfile.NamedTemporaryFile().name
 process = None
 
@@ -90,6 +103,35 @@ def load_progress(audio_book_filename):
 
     return progress_file_obj.get(audio_book_filename, 1)
 
+def get_lines_to_print(line_index_human_readable, text, chunk_length=75):
+    printable_lines = ['--']
+
+    text = f'{line_index_human_readable}: {text}'
+
+    current_line = []
+    current_line_length = 0
+
+    for word in text.split(' '):
+        word_length = len(word)
+        would_be_current_line_length = current_line_length + word_length + 1
+
+        if current_line_length + word_length <= chunk_length:
+            current_line_length = would_be_current_line_length
+            current_line.append(word)
+        else:
+            printable_lines.append(' '.join(current_line))
+            current_line = [word]
+            current_line_length = len(word)
+
+    if current_line:
+        printable_lines.append(' '.join(current_line))
+
+    return printable_lines
+
+def print_lines(printable_lines):
+    for printable_line in printable_lines:
+        print(printable_line)
+
 if __name__ == '__main__':
     starting_line_index_human_readable = load_progress(book_location)
 
@@ -137,23 +179,31 @@ if __name__ == '__main__':
         for line_index, line in enumerate(lines):
             line_index_human_readable = line_index + starting_line_index_human_readable
 
-            print(f'--\n{line_index_human_readable}: {line}\n')
+            printable_lines = get_lines_to_print(line_index_human_readable, line)
+
+            print_lines(printable_lines)
 
             try:
                 call_read_sentence(line)
             except Exception as e:
                 print(e)
+
+            darken_previous_line(printable_lines)
 
             save_progress(book_location, line_index_human_readable)
     else:
         for line_index, line in enumerate(lines):
             line_index_human_readable = line_index + starting_line_index_human_readable
 
-            print(f'--\n{line_index_human_readable}: {line}\n')
+            printable_lines = get_lines_to_print(line_index_human_readable, line)
+
+            print_lines(printable_lines)
 
             try:
                 call_read_sentence(line)
             except Exception as e:
                 print(e)
+
+            darken_previous_line(printable_lines)
 
     graceful_exit(None, None)
