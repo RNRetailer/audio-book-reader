@@ -1,8 +1,15 @@
+beautifulsoup4==4.12.3
+bz2file==0.98
 certifi==2024.8.30
 charset-normalizer==3.3.2
+ciseau==1.0.1
 click==8.1.7
+epub==0.5.2
+epub-conversion==1.0.15
 gTTS==2.5.3
 idna==3.8
 requests==2.32.3
+soupsieve==2.6
 striprtf==0.0.26
 urllib3==2.2.2
+xml-cleaner==2.0.4
