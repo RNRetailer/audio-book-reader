@@ -15,14 +15,14 @@ import subprocess
 
 language = 'en'
 progress_filename = 'audio_book_progress.json'
-temp_mp3_filename = tempfile.NamedTemporaryFile().name
 
 aggressive_saving = True
 seconds_between_lines = 0.5
 
-process = None
-
 # CODE ------------------------------------------------------------
+
+temp_mp3_filename = tempfile.NamedTemporaryFile().name
+process = None
 
 line_index_human_readable = 1
 book_location = os.path.abspath(sys.argv[1])
