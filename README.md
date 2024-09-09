@@ -4,7 +4,7 @@ Reads text files and outputs audio one sentence at a time. Saves progress. Runs 
 1. clone this repo and cd into it
 2. create a venv and activate it
 3. run `pip3 install -r requirements.txt`
-4. install mpg123. On Debian based distros, run `sudo apt install mpg123`
+4. install ffmpeg. On Debian based distros, run `sudo apt install ffmpeg`
 # usage instructions:
 1. activate the venv
 2. cd to the cloned repo
