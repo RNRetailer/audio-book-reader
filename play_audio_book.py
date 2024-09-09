@@ -3,6 +3,7 @@ from epub_conversion.utils import open_book, convert_epub_to_lines
 from multiprocessing import Process, current_process
 from bs4 import BeautifulSoup
 from termcolor import cprint
+from gtts.lang import tts_langs
 from gtts import gTTS
 import time
 import os
@@ -14,7 +15,9 @@ import subprocess
 
 # CONFIG ---------------------------------------------------------
 
-language = 'en'
+default_language = 'English'
+default_accent = 'American'
+
 progress_filename = 'audio_book_progress.json'
 
 aggressive_saving = True
@@ -24,6 +27,28 @@ extra_lines_to_backtrack_when_darkening_previous_lines = 1
 maximum_line_length = 75
 
 # CODE ------------------------------------------------------------
+
+ACCENT_TO_TLD_DICT = {
+    'American': 'us',
+    'Australian': 'com.au',
+    'Brazilian': 'com.br',
+    'Canadian': 'ca',
+    'English': 'co.uk',
+    'French': 'fr',
+    'Indian': 'co.in',
+    'Ireland': 'ie',
+    'Mexican': 'com.mx',
+    'Nigerian': 'com.ng',
+    'Portueguese': 'pt',
+    'South African': 'co.za',
+    'Spanish': 'es',
+}
+
+LANGUAGE_TO_LANG_CODE = {
+    v: k 
+    for k, v 
+    in tts_langs().items()
+}
 
 # pretty print
 def pprint(text) -> None:
@@ -70,8 +95,8 @@ def skip_line(sig, frame):
 signal.signal(signal.SIGINT, graceful_exit)
 signal.signal(signal.SIGTSTP, skip_line)
 
-def read_sentence_impl(text, language, playback_speed):
-    myobj = gTTS(text=text, lang=language, slow=False)
+def read_sentence_impl(text, playback_speed, tld, lang_code):
+    myobj = gTTS(text=text, lang=lang_code, tld=tld, slow=False)
 
     myobj.save(temp_mp3_filename)
 
@@ -79,10 +104,10 @@ def read_sentence_impl(text, language, playback_speed):
 
     subprocess.call(command, shell=True)
 
-def call_read_sentence(text, playback_speed, seconds_between_lines):
+def call_read_sentence(text, playback_speed, seconds_between_lines, tld, lang_code):
     global process
 
-    process = Process(target=read_sentence_impl, args=(text, language, playback_speed))
+    process = Process(target=read_sentence_impl, args=(text, playback_speed, tld, lang_code))
     process.start()
 
     while process.is_alive():
@@ -130,6 +155,20 @@ def get_seconds_between_lines():
 
     return default_seconds_between_lines
 
+def get_accent():
+    for arg_index, argument in enumerate(sys.argv):
+        if argument == '--accent':
+            return sys.argv[arg_index + 1]
+
+    return default_accent
+
+def get_language():
+    for arg_index, argument in enumerate(sys.argv):
+        if argument == '--language':
+            return sys.argv[arg_index + 1]
+
+    return default_language
+
 def get_lines_to_print(line_index_human_readable, text, chunk_length=maximum_line_length):
     printable_lines = ['--']
 
@@ -161,8 +200,21 @@ def print_lines(printable_lines):
 
 if __name__ == '__main__':
     starting_line_index_human_readable = load_progress(book_location)
+
+    starting_line_index_human_readable = max(starting_line_index_human_readable, 1)
+
     playback_speed = get_playback_speed_multiplier()
     seconds_between_lines = get_seconds_between_lines()
+    accent = get_accent()
+    tld = ACCENT_TO_TLD_DICT.get(accent)
+    language = get_language()
+    lang_code = LANGUAGE_TO_LANG_CODE.get(language)
+
+    if not tld:
+        raise RuntimeError(f'Invalid accent. Choices are: {list(ACCENT_TO_TLD_DICT.keys())}')
+
+    if not lang_code:
+        raise RuntimeError(f'Invalid language. Choices are: {list(LANGUAGE_TO_LANG_CODE.keys())}')
 
     lines = []
 
@@ -214,7 +266,7 @@ if __name__ == '__main__':
             print_lines(printable_lines)
 
             try:
-                call_read_sentence(line, playback_speed, seconds_between_lines)
+                call_read_sentence(line, playback_speed, seconds_between_lines, tld, lang_code)
             except Exception as e:
                 print(e)
 
@@ -230,7 +282,7 @@ if __name__ == '__main__':
             print_lines(printable_lines)
 
             try:
-                call_read_sentence(line, playback_speed, seconds_between_lines)
+                call_read_sentence(line, playback_speed, seconds_between_lines, tld, lang_code)
             except Exception as e:
                 print(e)
 
