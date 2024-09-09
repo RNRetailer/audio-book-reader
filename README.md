@@ -92,5 +92,5 @@ Urdu\
 Vietnamese\
 Cantonese\
 Chinese (Simplified)\
-Chinese (Mandarin/Taiwan)
+Chinese (Mandarin/Taiwan)\
 Chinese (Mandarin)
