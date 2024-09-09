@@ -21,6 +21,7 @@ aggressive_saving = True
 default_playback_speed = 1.0
 default_seconds_between_lines = 0.5
 extra_lines_to_backtrack_when_darkening_previous_lines = 1
+maximum_line_length = 75
 
 # CODE ------------------------------------------------------------
 
@@ -129,7 +130,7 @@ def get_seconds_between_lines():
 
     return default_seconds_between_lines
 
-def get_lines_to_print(line_index_human_readable, text, chunk_length=75):
+def get_lines_to_print(line_index_human_readable, text, chunk_length=maximum_line_length):
     printable_lines = ['--']
 
     text = f'{line_index_human_readable}: {text}'
