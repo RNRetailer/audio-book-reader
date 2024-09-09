@@ -18,7 +18,8 @@ language = 'en'
 progress_filename = 'audio_book_progress.json'
 
 aggressive_saving = True
-seconds_between_lines = 0.5
+default_playback_speed = 1.0
+default_seconds_between_lines = 0.5
 extra_lines_to_backtrack_when_darkening_previous_lines = 1
 
 # CODE ------------------------------------------------------------
@@ -77,7 +78,7 @@ def read_sentence_impl(text, language, playback_speed):
 
     subprocess.call(command, shell=True)
 
-def call_read_sentence(text, playback_speed):
+def call_read_sentence(text, playback_speed, seconds_between_lines):
     global process
 
     process = Process(target=read_sentence_impl, args=(text, language, playback_speed))
@@ -119,7 +120,14 @@ def get_playback_speed_multiplier():
         if argument == '--speed':
             return float(sys.argv[arg_index + 1])
 
-    return 1.0
+    return default_playback_speed
+
+def get_seconds_between_lines():
+    for arg_index, argument in enumerate(sys.argv):
+        if argument == '--seconds-between-lines':
+            return float(sys.argv[arg_index + 1])
+
+    return default_seconds_between_lines
 
 def get_lines_to_print(line_index_human_readable, text, chunk_length=75):
     printable_lines = ['--']
@@ -153,6 +161,7 @@ def print_lines(printable_lines):
 if __name__ == '__main__':
     starting_line_index_human_readable = load_progress(book_location)
     playback_speed = get_playback_speed_multiplier()
+    seconds_between_lines = get_seconds_between_lines()
 
     lines = []
 
@@ -204,7 +213,7 @@ if __name__ == '__main__':
             print_lines(printable_lines)
 
             try:
-                call_read_sentence(line, playback_speed)
+                call_read_sentence(line, playback_speed, seconds_between_lines)
             except Exception as e:
                 print(e)
 
@@ -220,7 +229,7 @@ if __name__ == '__main__':
             print_lines(printable_lines)
 
             try:
-                call_read_sentence(line, playback_speed)
+                call_read_sentence(line, playback_speed, seconds_between_lines)
             except Exception as e:
                 print(e)
 
