@@ -8,6 +8,6 @@ Reads text files and outputs audio one sentence at a time. Saves progress. Runs 
 # usage instructions:
 1. activate the venv
 2. cd to the cloned repo
-3. run `python3 play_audio_book.py PATH_TO_BOOK_FILE [OPTIONAL_LINE_INDEX_TO_START_FROM]`
+3. run `python3 play_audio_book.py PATH_TO_BOOK_FILE [--line LINE_TO_START_FROM] [--speed SPEED_MULTIPLIER]`
 4. you can safely skip a line with Control + z or exit with Control + c.
 5. playback will resume from the last played line if you open the same book again with no line index specified.
