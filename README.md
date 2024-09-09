@@ -94,3 +94,7 @@ Cantonese\
 Chinese (Simplified)\
 Chinese (Mandarin/Taiwan)\
 Chinese (Mandarin)
+# Demo:
+https://github.com/user-attachments/assets/e9889d74-ebc7-4e61-9bbd-a967626b8003
+
+
