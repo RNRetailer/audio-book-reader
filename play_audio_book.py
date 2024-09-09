@@ -19,6 +19,7 @@ progress_filename = 'audio_book_progress.json'
 
 aggressive_saving = True
 seconds_between_lines = 0.5
+extra_lines_to_backtrack_when_darkening_previous_lines = 1
 
 # CODE ------------------------------------------------------------
 
@@ -29,7 +30,14 @@ def pprint(text) -> None:
 print = pprint
 
 def darken_previous_line(printable_lines) -> None:
-    sys.stdout.write("\033[F" * len(printable_lines)) # Cursor up one line
+    # Cursor up one line
+
+    sys.stdout.write(
+        "\033[F" * (
+            len(printable_lines) 
+            + extra_lines_to_backtrack_when_darkening_previous_lines
+        )
+    )
 
     for printable_line in printable_lines:
         cprint(printable_line, "dark_grey", "on_black", attrs=["bold"])
@@ -60,17 +68,19 @@ def skip_line(sig, frame):
 signal.signal(signal.SIGINT, graceful_exit)
 signal.signal(signal.SIGTSTP, skip_line)
 
-def read_sentence_impl(text, language):
+def read_sentence_impl(text, language, playback_speed):
     myobj = gTTS(text=text, lang=language, slow=False)
 
     myobj.save(temp_mp3_filename)
 
-    subprocess.call(['mpg123', '-q', temp_mp3_filename])
+    command = f'ffplay -autoexit -v quiet -nodisp -af "atempo={playback_speed}" {temp_mp3_filename}'
 
-def call_read_sentence(text):
+    subprocess.call(command, shell=True)
+
+def call_read_sentence(text, playback_speed):
     global process
 
-    process = Process(target=read_sentence_impl, args=(text, language))
+    process = Process(target=read_sentence_impl, args=(text, language, playback_speed))
     process.start()
 
     while process.is_alive():
@@ -92,8 +102,9 @@ def save_progress(audio_book_filename, line_index_human_readable):
         f.flush()
 
 def load_progress(audio_book_filename):
-    if len(sys.argv) == 3:
-        return int(sys.argv[2])
+    for arg_index, argument in enumerate(sys.argv):
+        if argument == '--line':
+            return int(sys.argv[arg_index + 1])
 
     try:
         with open(progress_filename) as f:
@@ -102,6 +113,13 @@ def load_progress(audio_book_filename):
         progress_file_obj = {}
 
     return progress_file_obj.get(audio_book_filename, 1)
+
+def get_playback_speed_multiplier():
+    for arg_index, argument in enumerate(sys.argv):
+        if argument == '--speed':
+            return float(sys.argv[arg_index + 1])
+
+    return 1.0
 
 def get_lines_to_print(line_index_human_readable, text, chunk_length=75):
     printable_lines = ['--']
@@ -134,6 +152,7 @@ def print_lines(printable_lines):
 
 if __name__ == '__main__':
     starting_line_index_human_readable = load_progress(book_location)
+    playback_speed = get_playback_speed_multiplier()
 
     lines = []
 
@@ -185,7 +204,7 @@ if __name__ == '__main__':
             print_lines(printable_lines)
 
             try:
-                call_read_sentence(line)
+                call_read_sentence(line, playback_speed)
             except Exception as e:
                 print(e)
 
@@ -201,7 +220,7 @@ if __name__ == '__main__':
             print_lines(printable_lines)
 
             try:
-                call_read_sentence(line)
+                call_read_sentence(line, playback_speed)
             except Exception as e:
                 print(e)
 
