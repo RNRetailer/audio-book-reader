@@ -16,13 +16,13 @@ import subprocess
 # CONFIG ---------------------------------------------------------
 
 default_language = 'English'
-default_accent = 'American'
+default_accent = 'Indian'
 
 progress_filename = 'audio_book_progress.json'
 
 aggressive_saving = True
-default_playback_speed = 1.0
-default_seconds_between_lines = 0.5
+default_playback_speed = 1.5
+default_seconds_between_lines = 0.0
 extra_lines_to_backtrack_when_darkening_previous_lines = 1
 maximum_line_length = 75
 
@@ -240,7 +240,11 @@ if __name__ == '__main__':
 
     else:
         with open(book_location) as f:
-            possible_lines = f.read().split('.')
+            possible_sentences = f.read().split('.')
+            possible_lines = []
+
+            for sentence in possible_sentences:
+                possible_lines.extend(sentence.split('\n'))
 
             for line in possible_lines:
                 line = line.strip()
